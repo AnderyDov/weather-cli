@@ -1,8 +1,17 @@
 #!usr/bin/emv node
 import getArgs from './helpers/args.js';
-import { getWeather } from './services/api.service.js';
-import { printHelp, printError, printSuccess } from './services/log.service.js';
-import { saveKeyValue, TOKEN_DICTIONARY } from './services/storage.service.js';
+import { getWeather, getIcon } from './services/api.service.js';
+import {
+    printHelp,
+    printError,
+    printSuccess,
+    printWeather,
+} from './services/log.service.js';
+import {
+    getKeyValue,
+    saveKeyValue,
+    TOKEN_DICTIONARY,
+} from './services/storage.service.js';
 
 async function saveToken(token) {
     if (!token.length) {
@@ -10,8 +19,21 @@ async function saveToken(token) {
         return;
     }
     try {
-        await saveKeyValue('token', TOKEN_DICTIONARY.token);
+        await saveKeyValue('token', token);
         printSuccess('Токен сохранён');
+    } catch (error) {
+        printError(error.message);
+    }
+}
+
+async function saveCity(city) {
+    if (!city.length) {
+        printError('не передан город');
+        return;
+    }
+    try {
+        await saveKeyValue('city', city);
+        printSuccess('Город сохранён');
     } catch (error) {
         printError(error.message);
     }
@@ -19,8 +41,10 @@ async function saveToken(token) {
 
 async function getForcast() {
     try {
-        const weather = await getWeather(process.env.CITY);
-        console.log(weather);
+        const city =
+            process.env.CITY ?? (await getKeyValue(TOKEN_DICTIONARY.city));
+        const weather = await getWeather(city);
+        printWeather(weather, getIcon(weather.weather[0].icon));
     } catch (e) {
         if (e?.response?.status === 404) {
             printError('Неверно указан город');
@@ -38,6 +62,7 @@ function initCLI() {
         printHelp();
     }
     if (args.s) {
+        saveCity(args.s);
     }
     if (args.t) {
         return saveToken(args.t);
