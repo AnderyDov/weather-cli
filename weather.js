@@ -17,8 +17,22 @@ async function saveToken(token) {
     }
 }
 
+async function getForcast() {
+    try {
+        const weather = await getWeather(process.env.CITY);
+        console.log(weather);
+    } catch (e) {
+        if (e?.response?.status === 404) {
+            printError('Неверно указан город');
+        } else if (e?.response?.status === 401) {
+            printError('Неверно указан токен');
+        } else {
+            printError(e.message);
+        }
+    }
+}
+
 function initCLI() {
-    console.log(process.env);
     const args = getArgs(process.argv);
     if (args.h) {
         printHelp();
@@ -28,7 +42,7 @@ function initCLI() {
     if (args.t) {
         return saveToken(args.t);
     }
-    // getWeather('Surgut');
+    getForcast();
 }
 
 initCLI();

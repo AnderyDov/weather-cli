@@ -4,7 +4,9 @@ import { getKeyValue, TOKEN_DICTIONARY } from './storage.service.js';
 
 async function getWeather(city) {
     // const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
-    const token = await getKeyValue(TOKEN_DICTIONARY.token);
+    const token = process.env.TOKEN
+        ? process.env.TOKEN
+        : await getKeyValue(TOKEN_DICTIONARY.token);
     if (!token) {
         throw new Error(
             'Не задан ключ апи, зайте его через команду -t [API_KEY]',
